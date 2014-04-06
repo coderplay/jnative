@@ -1,3 +1,20 @@
+# Gradle
+build/
+.gradle
+
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea
+
+# Eclipse
+.classpath
+.project
+.settings
+
+
+#CMake
 CMakeCache.txt
 CMakeFiles
 Makefile
