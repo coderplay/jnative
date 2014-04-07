@@ -23,20 +23,32 @@ import java.nio.ByteBuffer;
 
 public class AIO {
 
-  public static native int setup() throws IOException;
+  /**
+   * Create an Asynchronous I/O context
+   * <code>int io_setup(unsigned nr_events, aio_context_t *ctxp);</code>
+   * @return
+   * @throws IOException
+   */
+  public static native long setup() throws IOException;
 
+  /**
+   * io_set_eventfd
+   * @param eventFd
+   * @return
+   * @throws IOException
+   */
   public static native int setEventFd(int eventFd) throws IOException;
 
-  public static native int submitIO() throws IOException;
+  public static native void submitIO() throws IOException;
 
-  public static native int preparePRead(long iocb, int fd, ByteBuffer byteBuffer, long position, int limit)
+  public static native void preparePRead(long context, int fd, ByteBuffer byteBuffer, long position, int limit)
       throws IOException;
 
-  public static native int preparePWrite(long iocb, int fd, ByteBuffer byteBuffer, long position, int limit)
+  public static native void preparePWrite(long context, int fd, ByteBuffer byteBuffer, long position, int limit)
       throws IOException;
 
-  public static native int getEvents() throws IOException;
+  public static native void getEvents() throws IOException;
 
-  public static native int destory() throws IOException;
+  public static native void destory(long context) throws IOException;
 
 }

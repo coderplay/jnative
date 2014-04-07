@@ -1,4 +1,43 @@
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'eclipse'
 
 group = 'jnative'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'commons-logging:commons-logging:1.1.1'
+    compile 'commons-logging:commons-logging-api:1.1'
+}
+
+//compileJava {
+//    doLast {
+//        compileNative.onlyIf{ project.hasProperty('native') }
+//    }
+//}
+
+compileJava << {
+    ext.jniClasses = ['jnative.io.AIO',
+                      'jnative.io.EPoll']
+    jniClasses.each { jniClass ->
+        exec {
+            workingDir buildDir
+            String javah = environment.'JAVA_HOME' + '/bin/javah'
+            commandLine javah, '-jni', '-classpath', 'classes/main', '-d', 'native', jniClass
+        }
+    }
+
+    exec {
+        workingDir buildDir.getPath() + '/native'
+        commandLine 'cmake', projectDir.getPath() + '/src/main/native'
+    }
+
+    exec {
+        workingDir  buildDir.getPath() + '/native'
+        commandLine 'make', 'VERBOSE=1'
+    }
+}
+

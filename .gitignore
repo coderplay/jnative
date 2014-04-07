@@ -11,6 +11,7 @@ build/
 # Eclipse
 .classpath
 .project
+.cproject
 .settings
 
 
@@ -20,3 +21,4 @@ CMakeFiles
 Makefile
 cmake_install.cmake
 install_manifest.txt
+/bin

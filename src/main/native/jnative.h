@@ -1,4 +1,5 @@
-/**
+/*
+ /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -15,13 +16,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* Header for class jnative_io_AIO */
 
-#ifndef JNATIVE_IO_AIO_H
-#define JNATIVE_IO_AIO_H
+#ifndef JNATIVE_H_
+#define JNATIVE_H_
 
-#include <libaio.h>
+#include <jni.h>
 
-#include "jnative.h"
+/* A helper macro to 'throw' a java exception. */
+#define THROW(env, exception_name, message) \
+  { \
+	jclass ecls = (*env)->FindClass(env, exception_name); \
+	if (ecls) { \
+	  (*env)->ThrowNew(env, ecls, message); \
+	  (*env)->DeleteLocalRef(env, ecls); \
+	} \
+  }
 
-#endif
+
+#endif /* JNATIVE_H_ */
