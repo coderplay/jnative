@@ -18,10 +18,88 @@
 
 package jnative.io;
 
+import jnative.utils.NativeObject;
+
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * This class is not thread safe.
+ */
 public class AIO {
+  private static final int SIZE_IOCB = sizeOfIocb();
+
+  public static final int IO_CMD_PREAD   = 0;
+  public static final int IO_CMD_PWRITE  = 1;
+  public static final int IO_CMD_FSYNC   = 2;
+  public static final int IO_CMD_FDSYNC  = 3;
+  public static final int IO_CMD_POLL    = 5; /* Never implemented in mainline, see io_prep_poll */
+  public static final int IO_CMD_NOOP    = 6;
+  public static final int IO_CMD_PREADV  = 7;
+  public static final int IO_CMD_PWRITEV = 8;
+
+  static class IOCommand {
+    int type;
+    FileDescriptor fd;
+    ByteBuffer data;
+
+    IOCommand(int type, FileDescriptor fd, ByteBuffer data) {
+      this.type = type;
+      this.fd = fd;
+      this.data = data;
+    }
+
+  }
+
+  private final long context;
+  private List<IOCommand> pendingOps;
+  private int eventFd;
+  private long[] events;
+
+  public AIO(int maxEvents) {
+    context = setup();
+    events = new long[maxEvents];
+    pendingOps = new ArrayList<IOCommand>();
+  }
+
+  public void register(int eventFd) {
+    this.eventFd = eventFd;
+  }
+
+  public void prepareRead(FileDescriptor fd, ByteBuffer dst) throws IOException {
+    pendingOps.add(new IOCommand(IO_CMD_PREAD, fd, dst));
+  }
+
+  public void prepareWrite(FileDescriptor fd, ByteBuffer src) throws IOException {
+    pendingOps.add(new IOCommand(IO_CMD_PWRITE, fd, src));
+  }
+
+  public void submit() throws IOException {
+    NativeObject eventArray = new NativeObject(pendingOps.size() * SIZE_IOCB, true);
+    long eventArrayAddress  = eventArray.address();
+    // TODO: more efficient way, pass the command list to native code through only one jni call
+    for (int i = 0; i < pendingOps.size(); i++) {
+      IOCommand command = pendingOps.get(i);
+      prepare(eventArrayAddress + i * SIZE_IOCB, command.type, command.fd, command.data, eventFd);
+    }
+    submit0(context, pendingOps.size(), eventArrayAddress);
+    eventArray.free();
+    pendingOps.clear();
+  }
+
+  public int poll(long timeout) {
+    return getEvents(context, events, timeout);
+  }
+
+
+  public void close() {
+    destory(context);
+  }
+
+  static native int sizeOfIocb();
 
   /**
    * Create an Asynchronous I/O context
@@ -29,26 +107,14 @@ public class AIO {
    * @return
    * @throws IOException
    */
-  public static native long setup() throws IOException;
+  static native long setup();
 
-  /**
-   * io_set_eventfd
-   * @param eventFd
-   * @return
-   * @throws IOException
-   */
-  public static native int setEventFd(int eventFd) throws IOException;
+  static native void prepare(long iocb, int command, FileDescriptor fd, ByteBuffer buf, int eventFd);
 
-  public static native void submitIO() throws IOException;
+  static native void submit0(long context, long nr, long iocbs);
 
-  public static native void preparePRead(long context, int fd, ByteBuffer byteBuffer, long position, int limit)
-      throws IOException;
+  static native int getEvents(long context, long[] events, long timeout);
 
-  public static native void preparePWrite(long context, int fd, ByteBuffer byteBuffer, long position, int limit)
-      throws IOException;
-
-  public static native void getEvents() throws IOException;
-
-  public static native void destory(long context) throws IOException;
+  static native void destory(long context);
 
 }

@@ -18,9 +18,11 @@
 
 package jnative.utils;
 
+import sun.misc.Unsafe;
+
 import java.lang.reflect.Field;
 
-public class Unsafe {
+public class JNativeUnsafe {
   private static final Unsafe unsafe;
 
   static {
@@ -33,7 +35,7 @@ public class Unsafe {
     }
   }
 
-  public static Unsafe get() {
+  public static Unsafe getUnsafe() {
     return unsafe;
   }
 

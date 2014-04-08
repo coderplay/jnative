@@ -62,7 +62,7 @@ public class JNativeCodeLoader {
   }
 
   /**
-   * Are the native gpl libraries loaded? 
+   * Are the jnative libraries loaded?
    * @return true if loaded, otherwise false
    */
   public static boolean isNativeCodeLoaded() {

@@ -13,12 +13,6 @@ dependencies {
     compile 'commons-logging:commons-logging-api:1.1'
 }
 
-//compileJava {
-//    doLast {
-//        compileNative.onlyIf{ project.hasProperty('native') }
-//    }
-//}
-
 compileJava << {
     ext.jniClasses = ['jnative.io.AIO',
                       'jnative.io.EPoll']
