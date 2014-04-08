@@ -77,9 +77,9 @@ Java_jnative_io_AIO_submit0(JNIEnv *env, jclass clazz, jlong context, jlong nr, 
 }
 
 
-JNIEXPORT void JNICALL
-Java_jnative_io_AIO_getEvents(JNIEnv *env, jclass clazz) {
-
+JNIEXPORT jint JNICALL Java_jnative_io_AIO_getEvents
+  (JNIEnv *env, jclass clazz, jlong ctx, jlongArray eventsAddress, jlong timeout) {
+  return (jint) 0;
 }
 
 JNIEXPORT void JNICALL

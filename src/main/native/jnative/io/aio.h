@@ -15,14 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* Header for class jnative_io_AIO */
-
 #ifndef JNATIVE_IO_AIO_H
 #define JNATIVE_IO_AIO_H
 
-#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <libaio.h>
 
 #include "jnative.h"
+#include "jnative_io_AIO.h"
 
 #endif

@@ -27,14 +27,11 @@ include(JNIFlags.cmake NO_POLICY_SCOPE)
 function(add_dual_library LIBNAME)
     add_library(${LIBNAME} SHARED ${ARGN})
     add_library(${LIBNAME}_static STATIC ${ARGN})
-    set_target_properties(${LIBNAME}_static PROPERTIES OUTPUT_NAME ${LIBNAME})
-endfunction(add_dual_library)
-
-# Compile a library with both shared and static variants
-function(add_dual_library LIBNAME)
-    add_library(${LIBNAME} SHARED ${ARGN})
-    add_library(${LIBNAME}_static STATIC ${ARGN})
-    set_target_properties(${LIBNAME}_static PROPERTIES OUTPUT_NAME ${LIBNAME})
+    set_target_properties(${LIBNAME} PROPERTIES
+        CLEAN_DIRECT_OUTPUT 1)
+    set_target_properties(${LIBNAME}_static PROPERTIES
+        OUTPUT_NAME ${LIBNAME}
+        CLEAN_DIRECT_OUTPUT 1)
 endfunction(add_dual_library)
 
 # Link both a static and a dynamic target against some libraries
@@ -103,7 +100,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -O2")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_REENTRANT -D_GNU_SOURCE")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64")
 
-
 include_directories(
     ${JNI_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -134,8 +130,9 @@ target_link_dual_libraries(jnative
     ${LIB_DL}
     ${JAVA_JVM_LIBRARY}
 )
-SET(LIBJNATIVE_VERSION "1.0.0")
+
 SET_TARGET_PROPERTIES(jnative PROPERTIES
-    SOVERSION ${LIBJNATIVE_VERSION})
+    VERSION   1.0.0
+    SOVERSION 1)
 dual_output_directory(jnative target/usr/local/lib)
 
