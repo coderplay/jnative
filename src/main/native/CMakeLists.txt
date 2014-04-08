@@ -87,6 +87,13 @@ endmacro(set_find_shared_library_version LVERS)
 
 find_package(JNI REQUIRED)
 
+
+SET(STORED_CMAKE_FIND_LIBRARY_SUFFIXES CMAKE_FIND_LIBRARY_SUFFIXES)
+set_find_shared_library_version("1")
+find_library(AIO_LIBRARY NAMES aio)
+SET(CMAKE_FIND_LIBRARY_SUFFIXES STORED_CMAKE_FIND_LIBRARY_SUFFIXES)
+
+
 # SET(STORED_CMAKE_FIND_LIBRARY_SUFFIXES CMAKE_FIND_LIBRARY_SUFFIXES)
 # set_find_shared_library_version("1")
 # find_package(aio REQUIRED)

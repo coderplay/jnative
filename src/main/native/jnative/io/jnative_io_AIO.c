@@ -18,6 +18,25 @@
 
 #include "aio.h"
 
+
+JNIEXPORT jint JNICALL
+Java_jnative_io_AIO_open0(JNIEnv *env, jclass clazz, jstring name, jint mode) {
+  const char *fname = (*env)->GetStringUTFChars(env, name, 0);
+  int fd = open(fname, mode);
+  return (jint) fd;
+}
+
+JNIEXPORT void JNICALL
+Java_jnative_io_AIO_close(JNIEnv *env, jclass clazz, jint fd) {
+  close(fd);
+}
+
+
+JNIEXPORT jint JNICALL
+Java_jnative_io_AIO_sizeOfIocb(JNIEnv *env, jclass clazz) {
+  return (jint) sizeof(struct iocb);
+}
+
 JNIEXPORT jlong JNICALL
 Java_jnative_io_AIO_setup(JNIEnv *env, jclass clazz) {
   io_context_t ctx = 0;
@@ -30,27 +49,33 @@ Java_jnative_io_AIO_setup(JNIEnv *env, jclass clazz) {
 }
 
 JNIEXPORT void JNICALL
-Java_jnative_io_AIO_setEventFd(JNIEnv *env, jclass clazz, jint eventFd) {
+Java_jnative_io_AIO_prepare(JNIEnv *env, jclass clzz, jlong iocb_adr,
+    jint command, jint fd, jlong offset, jlong buf_adr, jint len, jint eventfd) {
+  struct iocb *iocb = (void *)iocb_adr;
+  void* buffer = (void *) buf_adr;
 
+  iocb->aio_fildes = fd;
+  iocb->aio_lio_opcode = command;
+  iocb->aio_reqprio = 0;
+  iocb->u.c.buf = buffer;
+  iocb->u.c.nbytes = len;
+  iocb->u.c.offset = offset;
+
+  if (eventfd > 0) {
+    iocb->u.c.flags |= (1 << 0) /* IOCB_FLAG_RESFD */;
+    iocb->u.c.resfd = (unsigned) eventfd;
+  }
 }
 
 JNIEXPORT void JNICALL
-Java_jnative_io_AIO_submitIO(JNIEnv *env, jclass clazz) {
-
-
+Java_jnative_io_AIO_submit0(JNIEnv *env, jclass clazz, jlong context, jlong nr, jlong iocbs_adr) {
+  io_context_t ctx = (void *) context;
+  struct iocb **iocbs = (void *)iocbs_adr;
+  if(io_submit(ctx, (long)nr, iocbs) < 0) {
+    THROW(env, "java/lang/InternalError", "Error when submitting IO");
+  }
 }
 
-JNIEXPORT void JNICALL
-Java_jnative_io_AIO_preparePRead(JNIEnv *env, jclass clazz, jlong ctx,
-    jint eventfd, jobject buf, jlong pos, jint lim) {
-
-}
-
-JNIEXPORT void JNICALL
-Java_jnative_io_AIO_preparePWrite(JNIEnv *env, jclass clazz, jlong ctx,
-    jint eventfd, jobject buf, jlong pos, jint lim) {
-
-}
 
 JNIEXPORT void JNICALL
 Java_jnative_io_AIO_getEvents(JNIEnv *env, jclass clazz) {
@@ -58,9 +83,8 @@ Java_jnative_io_AIO_getEvents(JNIEnv *env, jclass clazz) {
 }
 
 JNIEXPORT void JNICALL
-Java_jnative_io_AIO_destory(JNIEnv *env, jclass clazz, jlong ctx) {
-
+Java_jnative_io_AIO_destroy(JNIEnv *env, jclass clazz, jlong ctx) {
   if (io_destroy((io_context_t) ctx) < 0) {
-    THROW(env, "java/io/IOException", "Error when destorying an AIO context");
+    THROW(env, "java/lang/InternalError", "Error when destroying an AIO context");
   }
 }

@@ -56,7 +56,7 @@ public class JNativeCodeLoader {
       }
       nativeLibraryLoaded = true;
     } catch (Throwable t) {
-      LOG.error("Could not load native gpl library", t);
+      LOG.error("Could not load jnative library", t);
       nativeLibraryLoaded = false;
     }
   }

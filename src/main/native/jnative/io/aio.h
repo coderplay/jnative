@@ -20,6 +20,7 @@
 #ifndef JNATIVE_IO_AIO_H
 #define JNATIVE_IO_AIO_H
 
+#include <stdio.h>
 #include <libaio.h>
 
 #include "jnative.h"
